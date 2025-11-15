@@ -1,0 +1,132 @@
+import random
+
+class NumberGuessingGame:
+    def __init__(self):
+        self.min_number = 1
+        self.max_number = 100
+        self.max_attempts = 7
+        self.secret_number = None
+        self.attempts = 0
+        self.game_won = False
+    
+    def generate_secret_number(self):
+        """Генерирует случайное число в заданном диапазоне"""
+        self.secret_number = random.randint(self.min_number, self.max_number)
+    
+    def get_user_guess(self):
+        """Запрашивает и проверяет ввод пользователя"""
+        while True:
+            try:
+                guess = input(f"Введите число от {self.min_number} до {self.max_number}: ").strip()
+                
+                # Проверка на команды выхода
+                if guess.lower() in ['выход', 'exit', 'quit']:
+                    return 'exit'
+                
+                guess = int(guess)
+                
+                # Проверка диапазона
+                if guess < self.min_number or guess > self.max_number:
+                    print(f"Ошибка: Число должно быть от {self.min_number} до {self.max_number}!")
+                    continue
+                    
+                return guess
+                
+            except ValueError:
+                print("Ошибка: Пожалуйста, введите целое число!")
+    
+    def give_hint(self, guess):
+        """Предоставляет подсказку пользователю"""
+        if guess < self.secret_number:
+            return "Загаданное число БОЛЬШЕ вашего"
+        else:
+            return "Загаданное число МЕНЬШЕ вашего"
+    
+    def play_round(self):
+        """Играет один раунд игры"""
+        self.generate_secret_number()
+        self.attempts = 0
+        self.game_won = False
+        
+        print(f"\n🎮 Я загадал число от {self.min_number} до {self.max_number}!")
+        print(f"У вас есть {self.max_attempts} попыток, чтобы угадать его.")
+        print("Для выхода введите 'выход' в любой момент.")
+        print("-" * 50)
+        
+        while self.attempts < self.max_attempts and not self.game_won:
+            attempts_left = self.max_attempts - self.attempts
+            print(f"\nПопытка #{self.attempts + 1} (осталось попыток: {attempts_left})")
+            
+            guess = self.get_user_guess()
+            
+            if guess == 'exit':
+                print("Игра прервана. До свидания!")
+                return False
+            
+            self.attempts += 1
+            
+            if guess == self.secret_number:
+                self.game_won = True
+                print(f"\n🎉 ПОЗДРАВЛЯЮ! Вы угадали число {self.secret_number}!")
+                print(f"Вам потребовалось {self.attempts} попыток.")
+                return True
+            else:
+                hint = self.give_hint(guess)
+                print(f"❌ Не угадали! {hint}")
+                
+                # Специальная подсказка после нескольких попыток
+                if self.attempts == 3:
+                    range_hint = self.get_range_hint()
+                    print(f"💡 Подсказка: {range_hint}")
+                
+                # Предупреждение о последней попытке
+                if attempts_left == 1:
+                    print("⚡ Внимание! Это последняя попытка!")
+        
+        if not self.game_won:
+            print(f"\n💔 К сожалению, вы исчерпали все {self.max_attempts} попыток.")
+            print(f"Я загадал число {self.secret_number}.")
+            return False
+    
+    def get_range_hint(self):
+        """Предоставляет подсказку о диапазоне после 3-й попытки"""
+        range_size = 20  # ±10 от загаданного числа
+        lower_bound = max(self.min_number, self.secret_number - range_size // 2)
+        upper_bound = min(self.max_number, self.secret_number + range_size // 2)
+        return f"Загаданное число находится между {lower_bound} и {upper_bound}"
+    
+    def play_game(self):
+        """Основной игровой цикл с возможностью повторной игры"""
+        print("=" * 60)
+        print("         ИГРА 'УГАДАЙ ЧИСЛО'")
+        print("=" * 60)
+        print("Правила игры:")
+        print(f"- Я загадываю число от {self.min_number} до {self.max_number}")
+        print(f"- У вас есть {self.max_attempts} попыток, чтобы угадать его")
+        print("- После каждой попытки я подскажу, больше или меньше ваше число")
+        print("- Для выхода введите 'выход'")
+        print("=" * 60)
+        
+        games_played = 0
+        games_won = 0
+        
+        while True:
+            games_played += 1
+            result = self.play_round()
+            
+            if result:
+                games_won += 1
+            
+            # Статистика
+            print(f"\n📊 Статистика: Игр сыграно: {games_played}, Побед: {games_won}")
+            
+            # Предложение сыграть еще раз
+            play_again = input("\nХотите сыграть еще раз? (да/нет): ").strip().lower()
+            if play_again not in ['да', 'yes', 'y', 'д']:
+                print("\nСпасибо за игру! До новых встреч! 👋")
+                break
+
+# Запуск игры
+if __name__ == "__main__":
+    game = NumberGuessingGame()
+    game.play_game() 
